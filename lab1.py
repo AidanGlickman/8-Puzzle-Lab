@@ -1,14 +1,16 @@
 # Lab 1: 8-puzzle. Artificial Intelligence 1
 # Name(s): 
-# Email(s): 
+# Email(s):
 from collections import deque
 import heapq
+import math
+
 INF = float('inf')
 
 #### Part 1: Problem Representation #################################################
 
 ### 1a. Implement PuzzleBoard, which represents a configuration of an n-by-n sliding puzzle.
-class PuzzleBoard :
+class PuzzleBoard:
 
     """Use the attribute board to store state data. 
     A tuple is our recommendation, but any *immutable* type will do.
@@ -21,7 +23,26 @@ class PuzzleBoard :
         NOTE: You may alter this function's signature as long as the only required
         parameter is tiles and it works as described above when supplied with only that
         """
-        raise NotImplementedError
+        self.size = int(math.sqrt(tiles))
+
+        board = []
+
+        col = 0
+        row = 0
+        for tile in tiles:
+
+            if len(board) <= col:
+                board[col] = []
+
+            board[col].append(tile)
+            row += 1
+
+            if row == self.size-1:
+                col += 1
+
+        self.board = tuple(board)
+
+
 
     def __str__(self) :
         """Returns a string representation of the board. 
@@ -51,17 +72,17 @@ class PuzzleBoard :
     def get_tile_at(self, row, col) :
         """Returns the number of the tile at position (row, col), or 0 if blank
         """
-        raise NotImplementedError
+        return self.board[col][row]
 
     def get_size(self) :
         """Returns the board size n
         """
-        raise NotImplementedError
+        return self.size
 
     def is_goal(self) :
         """Is this board the goal board? Return a boolean
         """
-        raise NotImplementedError
+        return self.board == ([1, 2, 3], [8, 0, 4], [7, 6, 5])
 
     def get_neighbors(self) :
         """Generate and return all neighboring boards in an iterable (e.g. list)
