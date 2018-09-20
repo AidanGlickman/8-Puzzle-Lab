@@ -1,5 +1,5 @@
 from sys import argv
-from lab1_solutions import *
+from lab1 import *
 
 """
 This program creates an initial board from each filename specified

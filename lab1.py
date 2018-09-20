@@ -7,6 +7,8 @@ import math
 
 INF = float('inf')
 
+ROW_COL_LENGTH = 3
+
 #### Part 1: Problem Representation #################################################
 
 ### 1a. Implement PuzzleBoard, which represents a configuration of an n-by-n sliding puzzle.
@@ -17,7 +19,7 @@ class PuzzleBoard:
     """
     board = ()
 
-    def __init__(self, tiles) :
+    def __init__(self, tiles, n) :
         """Creates a PuzzleBoard from an n-by-n array of tiles, where
         tiles[row][col] = tile at (row, col). 
         NOTE: You may alter this function's signature as long as the only required
@@ -88,7 +90,19 @@ class PuzzleBoard:
     def get_neighbors(self) :
         """Generate and return all neighboring boards in an iterable (e.g. list)
         """
-        raise NotImplementedError
+        blank = (INF, INF)
+        neighbors = []
+        row = 0
+        col = 0
+        while blank == (INF, INF):
+            if board[row][col] == 0:
+                blank = (row, col)
+                row += 1
+                col += 1
+        neighbor_tiles = [(row-1, col), (row+1, col), (row, col-1), (row, col+1)]
+        for i, tile in enumerate(neighbor_tiles):
+            if (tile[0] < 0 or tile[0] > 2) or (tile[1] < 0 or tile[1] > 2):
+                neighbor_tiles.pop(i)
 
     """Feel free to write additional helper methods. Keep in mind, however, that AbstractState 
     will be used for all of our algorithms, so make sure that its functionality is 
@@ -150,8 +164,10 @@ class AbstractState:
         However, do NOT include the parent's board. This is a useful trick that will
         help improve efficiency for all search algorithms.
         """
-        
-        return self.snapshot.get_neighbors()
+        neighbors = []
+        boards = self.snapshot.get_neighbors()
+        for board in boards:
+            neighbors.append(AbstractState(board, self, self.path_length+1))
 
     """Feel free to write additional helper methods. Keep in mind, however, that AbstractState 
     will be used for all of our algorithms, so make sure that its functionality is 
@@ -178,11 +194,11 @@ The append() and pop() methods will be handy.
 
 class DFSPuzzleSolver:
 
-    def __init__(self, initial_board, graph_search = False, max_depth = INF,) :
+    def __init__(self, initial_board, graph_search = False, max_depth = INF) :
          """Find a solution to the initial puzzle board, up to max_depth, using depth-limited DFS (with backtracking). 
          If graph_search is True, avoid re-exploring paths **see Part 2c** 
          """
-        raise NotImplementedError
+         raise NotImplementedError
 
     def num_moves(self) :
         """ return number of moves in solution to initial board. If no solution found, return None."""
