@@ -108,7 +108,10 @@ class AbstractState:
         board at the end of the path, its parent which is the preceding AbstractState of
         the path (None if initial state), and path_length which is the number of states 
         from the initial state to this one (zero if initial state)"""
-        raise NotImplementedError
+        
+        self.snapshot = snapshot
+        self.parent = parent
+        self.path_length = path_length
 
     def __lt__(self, other):
         """Leave this method as is. It is needed to make tuple comparison work with heapq"""
@@ -128,19 +131,19 @@ class AbstractState:
     def get_snapshot(self) :
         """ Returns the PuzzleBoard at the end of the path
         """
-        raise NotImplementedError
+        return self.snapshot
 
     def get_parent(self) :
         """ Returns the AbstractState that generated this one; 
         that is, the state node one level up the search tree
         """
-        raise NotImplementedError
+        return self.parent
 
     def get_path_length(self) :
         """ Returns the length of the path, not counting the initial state.
         AKA search depth
         """
-        raise NotImplementedError
+        return self.path_length
 
     def get_neighbors(self) :
         """Generate and return all neighboring boards in an iterable (e.g. list)
@@ -148,7 +151,7 @@ class AbstractState:
         help improve efficiency for all search algorithms.
         """
         
-        raise NotImplementedError
+        return self.snapshot.get_neighbors()
 
     """Feel free to write additional helper methods. Keep in mind, however, that AbstractState 
     will be used for all of our algorithms, so make sure that its functionality is 
