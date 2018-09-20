@@ -1,6 +1,6 @@
 # Lab 1: 8-puzzle. Artificial Intelligence 1
-# Name(s): 
-# Email(s):
+# Name(s): Aidan Glickman, Anthony Lekan
+# Email(s): aidgli20@bergen.org, antlek21@bergen.org
 from collections import deque
 import heapq
 import math
@@ -39,6 +39,7 @@ class PuzzleBoard:
 
             if row == self.size-1:
                 col += 1
+            board[col] = tuple(board[col])
 
         self.board = tuple(board)
 
