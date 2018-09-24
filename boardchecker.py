@@ -22,17 +22,20 @@ for i in range(1,len(argv)):
         for i in range(n):            
             row = [int(x) for x in file.readline().split()]
             tiles.append(row)
-    board = PuzzleBoard(tiles, n)
+    board = PuzzleBoard(tiles)
 
     # show initial board
     print("{}'s initial board:\n{}".format(filename,str(board)))
     
     # is it the goal board?
-    print("This is the goal!") if board.is_goal() else print("This is NOT the goal!")
+    print("This is the goal!")
+
+    if not board.is_goal():
+        print("This is NOT the goal!")
 
     # show all neighbors
     print("Neighbors of the initial board:\n")
-    for neighbor in board.neighbors():
+    for neighbor in board.get_neighbors():
         print(str(neighbor))
 
     # print heuristic values

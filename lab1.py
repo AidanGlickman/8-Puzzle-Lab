@@ -19,31 +19,21 @@ class PuzzleBoard:
     """
     board = ()
 
-    def __init__(self, tiles, n) :
+    def __init__(self, tiles) :
         """Creates a PuzzleBoard from an n-by-n array of tiles, where
         tiles[row][col] = tile at (row, col). 
         NOTE: You may alter this function's signature as long as the only required
         parameter is tiles and it works as described above when supplied with only that
         """
-        self.size = int(math.sqrt(tiles))
 
-        board = []
+        self.size = len(tiles)
 
-        col = 0
-        row = 0
-        for tile in tiles:
+        temp_board = []
 
-            if len(board) <= col:
-                board[col] = []
+        for col in range(self.size):
+            temp_board.append(tuple(tiles[col]))
 
-            board[col].append(tile)
-            row += 1
-
-            if row == self.size-1:
-                col += 1
-            board[col] = tuple(board[col])
-
-        self.board = tuple(board)
+        self.board = tuple(temp_board)
 
 
 
@@ -52,9 +42,9 @@ class PuzzleBoard:
         Implemented for you; you're welcome!
         """
         str_list = []
-        for row in range(self.size()):
-            for col in range(self.size()):
-                str_list.append("{:2d} ".format(self.tile_at(row,col)))
+        for row in range(self.size):
+            for col in range(self.size):
+                str_list.append("{:2d} ".format(self.get_tile_at(row,col)))
             str_list.append("\n")
         return "".join(str_list)
 
@@ -85,24 +75,38 @@ class PuzzleBoard:
     def is_goal(self) :
         """Is this board the goal board? Return a boolean
         """
-        return self.board == ([1, 2, 3], [8, 0, 4], [7, 6, 5])
+        solved_board = []
+
+        i = 0
+
+        for col in range(self.size):
+            solved_board.append([])
+            for row in range(self.size):
+                solved_board[col].append(i)
+                i += 1
+            solved_board[col] = tuple(solved_board[col])
+
+        return tuple(solved_board) == self.board
 
     def get_neighbors(self) :
         """Generate and return all neighboring boards in an iterable (e.g. list)
         """
         blank = (INF, INF)
-        neighbors = []
         row = 0
         col = 0
+
         while blank == (INF, INF):
-            if board[row][col] == 0:
+            if self.board[row][col] == 0:
                 blank = (row, col)
                 row += 1
                 col += 1
-        neighbor_tiles = [(row-1, col), (row+1, col), (row, col-1), (row, col+1)]
-        for i, tile in enumerate(neighbor_tiles):
+
+        neighbors = [(row-1, col), (row+1, col), (row, col-1), (row, col+1)]
+        for i, tile in enumerate(neighbors):
             if (tile[0] < 0 or tile[0] > 2) or (tile[1] < 0 or tile[1] > 2):
-                neighbor_tiles.pop(i)
+                neighbors.pop(i)
+
+        return neighbors
 
     """Feel free to write additional helper methods. Keep in mind, however, that AbstractState 
     will be used for all of our algorithms, so make sure that its functionality is 
@@ -117,7 +121,7 @@ Writing your own tests below is also a good idea.
 
 class AbstractState:
 
-    def __init__(self, snapshot, parent, path_length) :
+    def __init__(self, snapshot, parent, path_length):
         """Creates an abstract state which represents a path. Takes a snapshot, the 
         board at the end of the path, its parent which is the preceding AbstractState of
         the path (None if initial state), and path_length which is the number of states 
