@@ -110,10 +110,12 @@ class PuzzleBoard:
         
         neighbors = []
 
-        board = list(self.board)
         for tile in validTiles:
-            board[blank[0]][blank[1]] = board[tile[0]][tile[1]]
-            board[tile[0]][tile[1]] = 0
+            newBoard = list(self.board)
+            newBoard[blank[0]][blank[1]] = newBoard[tile[0]][tile[1]]
+            newBoard[tile[0]][tile[1]] = 0
+            neighbors.append(newBoard)
+
         
 
     """Feel free to write additional helper methods. Keep in mind, however, that AbstractState 
