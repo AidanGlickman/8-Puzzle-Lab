@@ -110,13 +110,18 @@ class PuzzleBoard:
         
         neighbors = []
 
+        listBoard = []
+        for row in self.board:
+            listBoard.append(list(row))
+
         for tile in validTiles:
-            newBoard = list(self.board)
+            newBoard = listBoard
             newBoard[blank[0]][blank[1]] = newBoard[tile[0]][tile[1]]
             newBoard[tile[0]][tile[1]] = 0
+            print(newBoard)
             neighbors.append(newBoard)
 
-        
+        return neighbors
 
     """Feel free to write additional helper methods. Keep in mind, however, that AbstractState 
     will be used for all of our algorithms, so make sure that its functionality is 
