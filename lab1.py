@@ -170,6 +170,7 @@ class AbstractState:
         """
         neighbors = []
         boards = self.snapshot.get_neighbors()
+
         for board in boards:
             neighbors.append(AbstractState(board, self, self.path_length+1))
 
@@ -241,6 +242,13 @@ class BFSPuzzleSolver:
         """find a solution to the initial puzzle board using BFS. 
         If graph_search is True, avoid re-exploring paths **see Part 2c**
         """
+
+        queue = []
+        steps = 1
+
+        while not initial_board.is_goal():
+            pass
+
         raise NotImplementedError
 
     def num_moves(self) :

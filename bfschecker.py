@@ -22,7 +22,7 @@ num_puzzles = len(argv)
 puzz_set = None
 # if given a puzzle set, prepare to do that set
 if argv[1] in PUZZLE_SETS:
-    puzz_set = argv[1] 
+    puzz_set = argv[1]
     num_puzzles = PUZZLE_SETS[puzz_set]
     if puzz_set != "test_puzzle":
         puzz_set += "-"
@@ -40,12 +40,12 @@ for i in range(1 if (puzz_set is None) else 0, num_puzzles):
     n = None
     with open(filename, 'r') as file :
         n = int(file.readline())
-        for j in range(n):            
+        for j in range(n):
             row = [int(x) for x in file.readline().split()]
             tiles.append(row)
-    board = PuzzleBoard(tiles,n)
+    board = PuzzleBoard(tiles)
 
-    # run the solver 
+    # run the solver
     start = timer()
     solver = BFSPuzzleSolver(initial_board = board, graph_search = GRAPH_SEARCH)
     end = timer()
