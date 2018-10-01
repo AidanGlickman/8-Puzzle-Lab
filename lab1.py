@@ -7,8 +7,6 @@ import math
 
 INF = float('inf')
 
-ROW_COL_LENGTH = 3
-
 #### Part 1: Problem Representation #################################################
 
 ### 1a. Implement PuzzleBoard, which represents a configuration of an n-by-n sliding puzzle.
@@ -98,13 +96,30 @@ class PuzzleBoard:
         while blank == (INF, INF):
             if self.board[row][col] == 0:
                 blank = (row, col)
-                row += 1
-                col += 1
+                break
+            row += 1
+            col += 1
 
-        neighbors = [(row-1, col), (row+1, col), (row, col-1), (row, col+1)]
-        for i, tile in enumerate(neighbors):
-            if (tile[0] < 0 or tile[0] > 2) or (tile[1] < 0 or tile[1] > 2):
-                neighbors.pop(i)
+        posTiles = [(blank[row]-1, blank[col]), (blank[row], blank[col]-1), (blank[row]+1, blank[col]), (blank[row], blank[col]+1)]
+        validTiles = []
+        i=0
+        for tile in posTiles:
+            if not(tile[0] < 0 or tile[0] > len(self.board) or tile[1] < 0 or tile[1] > len(self.board)):
+                validTiles.append(tile)
+            i += 1
+        
+        neighbors = []
+
+        listBoard = []
+        for row in self.board:
+            listBoard.append(list(row))
+
+        for tile in validTiles:
+            newBoard = listBoard
+            newBoard[blank[0]][blank[1]] = newBoard[tile[0]][tile[1]]
+            newBoard[tile[0]][tile[1]] = 0
+            print(newBoard)
+            neighbors.append(newBoard)
 
         return neighbors
 
@@ -199,27 +214,34 @@ The append() and pop() methods will be handy.
 
 class DFSPuzzleSolver:
 
+    counts = {"moves":0, "enqueues":0, "extends":0}
+
+    solution = []
+
     def __init__(self, initial_board, graph_search = False, max_depth = INF) :
          """Find a solution to the initial puzzle board, up to max_depth, using depth-limited DFS (with backtracking). 
          If graph_search is True, avoid re-exploring paths **see Part 2c** 
          """
-         raise NotImplementedError
+         stack = []
+         for board in initial_board.get_neighbors:
+            pass
+
 
     def num_moves(self) :
         """ return number of moves in solution to initial board. If no solution found, return None."""
-        raise NotImplementedError
+        return counts["moves"]
 
     def num_enqueues(self) :
         """ return number of nodes enqueued during search, successful or not. """
-        raise NotImplementedError
+        return counts["enqueues"]
 
     def num_extends(self) :
         """ return number of nodes extended/expanded during search, successful or not. """
-        raise NotImplementedError
+        return counts["extends"]
 
     def get_solution(self) :
         """ returns sequence of PuzzleBoards, initial board to goal board. If no solution found, return None."""
-        raise NotImplementedError
+        return solution
 
 
 
