@@ -35,7 +35,7 @@ class PuzzleBoard:
 
 
 
-    def __str__(self) :
+    def __str__(self):
         """Returns a string representation of the board. 
         Implemented for you; you're welcome!
         """
@@ -60,17 +60,17 @@ class PuzzleBoard:
         return hash(self.board)
 
 
-    def get_tile_at(self, row, col) :
+    def get_tile_at(self, row, col):
         """Returns the number of the tile at position (row, col), or 0 if blank
         """
         return self.board[col][row]
 
-    def get_size(self) :
+    def get_size(self):
         """Returns the board size n
         """
         return self.size
 
-    def is_goal(self) :
+    def is_goal(self):
         """Is this board the goal board? Return a boolean
         """
         solved_board = []
@@ -86,28 +86,40 @@ class PuzzleBoard:
 
         return tuple(solved_board) == self.board
 
-    def get_neighbors(self) :
+    def get_neighbors(self):
         """Generate and return all neighboring boards in an iterable (e.g. list)
         """
         blank = (INF, INF)
         row = 0
         col = 0
 
-        while blank == (INF, INF):
-            if self.board[row][col] == 0:
-                blank = (row, col)
-                break
-            row += 1
+        # while blank == (INF, INF):
+        #     if self.board[row][col] == 0:
+        #         blank = (row, col)
+        #         break
+        #     row += 1
+        #     col += 1
+
+        for c in range(self.size):
+            for r in range(self.size):
+
+                if self.board[c][r] == 0:
+                    blank = (r, c)
+
+                row += 1
+
             col += 1
 
-        posTiles = [(blank[row]-1, blank[col]), (blank[row], blank[col]-1), (blank[row]+1, blank[col]), (blank[row], blank[col]+1)]
+        posTiles = [(blank[0]-1, blank[1]), (blank[0], blank[1]-1), (blank[0]+1, blank[1]), (blank[0], blank[1]+1)]
         validTiles = []
-        i=0
+
+        i = 0
+
         for tile in posTiles:
             if not(tile[0] < 0 or tile[0] > len(self.board) or tile[1] < 0 or tile[1] > len(self.board)):
                 validTiles.append(tile)
             i += 1
-        
+
         neighbors = []
 
         listBoard = []
@@ -118,7 +130,6 @@ class PuzzleBoard:
             newBoard = listBoard
             newBoard[blank[0]][blank[1]] = newBoard[tile[0]][tile[1]]
             newBoard[tile[0]][tile[1]] = 0
-            print(newBoard)
             neighbors.append(newBoard)
 
         return neighbors
@@ -141,7 +152,7 @@ class AbstractState:
         board at the end of the path, its parent which is the preceding AbstractState of
         the path (None if initial state), and path_length which is the number of states 
         from the initial state to this one (zero if initial state)"""
-        
+
         self.snapshot = snapshot
         self.parent = parent
         self.path_length = path_length
@@ -161,24 +172,27 @@ class AbstractState:
         This is important to make PuzzleBoard hashable"""
         return hash(self.snapshot)
 
-    def get_snapshot(self) :
+    def get_snapshot(self):
         """ Returns the PuzzleBoard at the end of the path
         """
         return self.snapshot
 
-    def get_parent(self) :
+    def get_parent(self):
         """ Returns the AbstractState that generated this one; 
         that is, the state node one level up the search tree
         """
         return self.parent
 
-    def get_path_length(self) :
+    def get_path_length(self):
         """ Returns the length of the path, not counting the initial state.
         AKA search depth
         """
         return self.path_length
 
-    def get_neighbors(self) :
+    def is_goal(self):
+        return self.snapshot.is_goal()
+
+    def get_neighbors(self):
         """Generate and return all neighboring boards in an iterable (e.g. list)
         However, do NOT include the parent's board. This is a useful trick that will
         help improve efficiency for all search algorithms.
@@ -265,29 +279,60 @@ class BFSPuzzleSolver:
         If graph_search is True, avoid re-exploring paths **see Part 2c**
         """
 
-        queue = []
+        # ordered list of enqueued boards
+        queue = [AbstractState(initial_board, None, 0)]
         steps = 1
 
-        while not initial_board.is_goal():
-            pass
+        goalBoard = None
 
-        raise NotImplementedError
+        # use if graph_search = True - List of extended nodes
+        extended = []
+        expanded = []
+
+        foundGoal = False
+
+        # main loop
+        while not foundGoal:
+
+            for board in queue:
+
+                # goal found
+                if board.snapshot.is_goal():
+                    goalBoard = board
+                    foundGoal = True
+
+                # extend board
+                for neighbor in board.snapshot.get_neighbors():
+
+                    if (not graph_search) or (graph_search and not extended.index(queue)) and not (graph_search and expanded.index(neighbor)):
+                        queue.append(AbstractState(PuzzleBoard(neighbor), board, board.get_path_length()+1))
+
+                steps += 1
+
+                extended.append(board)
+
+                queue.remove(board)
+
+        self.moves = steps
+        self.solution = goalBoard
+        self.enqueues = len(expanded)
+        self.extended = len(extended)
 
     def num_moves(self) :
         """ return number of moves in solution to initial board. If no solution found, return None."""
-        raise NotImplementedError
+        return self.moves
 
     def num_enqueues(self) :
         """ return number of nodes enqueued during search, successful or not. """
-        raise NotImplementedError
+        return self.enqueues
 
     def num_extends(self) :
         """ return number of nodes extended/expanded during search, successful or not. """
-        raise NotImplementedError
+        return self.extended
 
     def get_solution(self) :
         """ returns sequence of boards, initial board to goal board. If no solution found, return None."""
-        raise NotImplementedError
+        return self.solution
 
 """ Use bfschecker.py to check that your BFSPuzzleSolver works properly.
 Writing your own tests below is also a good idea.
