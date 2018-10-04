@@ -243,19 +243,19 @@ class DFSPuzzleSolver:
 
     def num_moves(self) :
         """ return number of moves in solution to initial board. If no solution found, return None."""
-        return counts["moves"]
+        return self.counts["moves"]
 
     def num_enqueues(self) :
         """ return number of nodes enqueued during search, successful or not. """
-        return counts["enqueues"]
+        return self.counts["enqueues"]
 
     def num_extends(self) :
         """ return number of nodes extended/expanded during search, successful or not. """
-        return counts["extends"]
+        return self.counts["extends"]
 
     def get_solution(self) :
         """ returns sequence of PuzzleBoards, initial board to goal board. If no solution found, return None."""
-        return solution
+        return self.solution
 
 
 
