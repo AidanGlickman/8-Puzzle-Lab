@@ -17,6 +17,7 @@ class PuzzleBoard:
     A tuple is our recommendation, but any *immutable* type will do.
     """
     board = ()
+    goal = ()
 
     def __init__(self, tiles) :
         """Creates a PuzzleBoard from an n-by-n array of tiles, where
@@ -33,6 +34,20 @@ class PuzzleBoard:
             temp_board.append(tuple(tiles[col]))
 
         self.board = tuple(temp_board)
+
+        solved_board = [[] for x in range(self.size)]
+
+        col = 0
+
+        for number in range(self.size * self.size):
+
+            if col > len(solved_board) - 1:
+                col = 0
+
+            solved_board[col].append(number)
+            col += 1
+
+        self.goal = solved_board
 
 
 
@@ -74,19 +89,7 @@ class PuzzleBoard:
     def is_goal(self):
         """Is this board the goal board? Return a boolean
         """
-        solved_board = [[] for x in range(self.size)]
-
-        col = 0
-
-        for number in range(self.size*self.size):
-
-            if col > len(solved_board)-1:
-                col = 0
-
-            solved_board[col].append(number)
-            col += 1
-
-        return tuple(solved_board) == self.board
+        return self.goal == self.board
 
     def get_neighbors(self):
         """Generate and return all neighboring boards in an iterable (e.g. list)
@@ -315,6 +318,10 @@ class BFSPuzzleSolver:
 
         foundGoal = False
 
+        print(initial_board)
+
+        print('-------')
+
         # main loop
         while not foundGoal:
 
@@ -331,14 +338,13 @@ class BFSPuzzleSolver:
                 # extend board
                 for neighbor in board.snapshot.get_neighbors():
 
-                    if (not graph_search) or (graph_search and not extended.index(queue)) and not (graph_search and expanded.index(neighbor)):
+                    if (not graph_search) or ((graph_search and not neighbor in extended) and not (graph_search and neighbor in expanded)):
                         queue.append(AbstractState(PuzzleBoard(neighbor.board), board, board.get_path_length()+1))
 
                 steps += 1
 
                 extended.append(board)
 
-                print(len(queue))
                 queue.remove(board)
 
         self.moves = steps
