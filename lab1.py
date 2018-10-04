@@ -26,7 +26,6 @@ class PuzzleBoard:
         """
 
         self.size = len(tiles)
-        print(self.size)
 
         temp_board = []
 
