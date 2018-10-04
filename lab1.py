@@ -26,7 +26,6 @@ class PuzzleBoard:
         """
 
         self.size = len(tiles)
-        print(self.size)
 
         temp_board = []
 
@@ -75,16 +74,17 @@ class PuzzleBoard:
     def is_goal(self):
         """Is this board the goal board? Return a boolean
         """
-        solved_board = []
+        solved_board = [[] for x in range(self.size)]
 
-        i = 0
+        col = 0
 
-        for col in range(self.size):
-            solved_board.append([])
-            for row in range(self.size):
-                solved_board[col].append(i)
-                i += 1
-            solved_board[col] = tuple(solved_board[col])
+        for number in range(self.size*self.size):
+
+            if col > len(solved_board)-1:
+                col = 0
+
+            solved_board[col].append(number)
+            col += 1
 
         return tuple(solved_board) == self.board
 
@@ -130,8 +130,10 @@ class PuzzleBoard:
 
         for tile in validTiles:
             newBoard = copy.deepcopy(listBoard)
+
             newBoard[blank[1]][blank[0]] = newBoard[tile[1]][tile[0]]
             newBoard[tile[1]][tile[0]] = 0
+
             newBoard = PuzzleBoard(newBoard)
             neighbors.append(newBoard)
 
@@ -322,17 +324,21 @@ class BFSPuzzleSolver:
                 if board.snapshot.is_goal():
                     goalBoard = board
                     foundGoal = True
+                    print(goalBoard.get_snapshot())
+                    print('FOUND GOAL!')
+                    break
 
                 # extend board
                 for neighbor in board.snapshot.get_neighbors():
 
                     if (not graph_search) or (graph_search and not extended.index(queue)) and not (graph_search and expanded.index(neighbor)):
-                        queue.append(AbstractState(PuzzleBoard(neighbor), board, board.get_path_length()+1))
+                        queue.append(AbstractState(PuzzleBoard(neighbor.board), board, board.get_path_length()+1))
 
                 steps += 1
 
                 extended.append(board)
 
+                print(len(queue))
                 queue.remove(board)
 
         self.moves = steps
