@@ -28,9 +28,9 @@ for i in range(1,len(argv)):
     print("{}'s initial board:\n{}".format(filename,str(board)))
     
     # is it the goal board?
-    print("This is the goal!")
-
-    if not board.is_goal():
+    if board.is_goal():
+        print("This is the goal!")
+    else:
         print("This is NOT the goal!")
 
     # show all neighbors

@@ -3,6 +3,7 @@
 # Email(s): aidgli20@bergen.org, antlek21@bergen.org
 from collections import deque
 import heapq
+import copy
 import math
 
 INF = float('inf')
@@ -25,6 +26,7 @@ class PuzzleBoard:
         """
 
         self.size = len(tiles)
+        print(self.size)
 
         temp_board = []
 
@@ -116,7 +118,7 @@ class PuzzleBoard:
         i = 0
 
         for tile in posTiles:
-            if not(tile[0] < 0 or tile[0] > len(self.board) or tile[1] < 0 or tile[1] > len(self.board)):
+            if not(tile[0] < 0 or tile[0] >= len(self.board) or tile[1] < 0 or tile[1] >= len(self.board)):
                 validTiles.append(tile)
             i += 1
 
@@ -127,9 +129,10 @@ class PuzzleBoard:
             listBoard.append(list(row))
 
         for tile in validTiles:
-            newBoard = listBoard
-            newBoard[blank[0]][blank[1]] = newBoard[tile[0]][tile[1]]
-            newBoard[tile[0]][tile[1]] = 0
+            newBoard = copy.deepcopy(listBoard)
+            newBoard[blank[1]][blank[0]] = newBoard[tile[1]][tile[0]]
+            newBoard[tile[1]][tile[0]] = 0
+            newBoard = PuzzleBoard(newBoard)
             neighbors.append(newBoard)
 
         return neighbors
@@ -202,6 +205,7 @@ class AbstractState:
 
         for board in boards:
             neighbors.append(AbstractState(board, self, self.path_length+1))
+        return neighbors
 
     """Feel free to write additional helper methods. Keep in mind, however, that AbstractState 
     will be used for all of our algorithms, so make sure that its functionality is 
@@ -236,23 +240,25 @@ class DFSPuzzleSolver:
          """Find a solution to the initial puzzle board, up to max_depth, using depth-limited DFS (with backtracking). 
          If graph_search is True, avoid re-exploring paths **see Part 2c** 
          """
-         working = []
-         stack = [initial_board]
-         self.counts["enqueues"] += 1
+         stack = []
+         if not initial_board.is_goal():
+             initial_board = AbstractState(initial_board, None, 0)
+             stack = [initial_board]
+             self.counts["enqueues"] += 1
          
-         while stack:
+         while stack and self.solution == []:
             curr = stack.pop()
             self.counts["extends"] += 1
             
             if curr.is_goal():
-                self.solution.push(curr)
+                self.solution.append(curr)
                 while curr != initial_board:
                     curr = curr.get_parent()
-                    solution.push(curr)
+                    self.solution.append(curr)
 
             for neighbor in curr.get_neighbors():
-                if !(neighbor == curr.get_parent()):
-                    stack.push(neighbor)
+                if not neighbor == curr.get_parent():
+                    stack.append(neighbor)
                     self.counts["enqueues"] += 1
 
 
@@ -429,7 +435,7 @@ Writing your own tests below is also a good idea.
 """
 You will want to become familiar with the heapq module, which is imported for you. 
 It operates on lists and makes them work as priority queues.
-Namely, the methods heapq.heappush, heapq.heappop, and possibly heapq.nsmallest 
+Namely, the methods heapq.heapappend, heapq.heappop, and possibly heapq.nsmallest 
 (which with n =1 works as a "peek" at the minimum without popping it) will be useful. 
 https://docs.python.org/3/library/heapq.html
 """
