@@ -28,10 +28,10 @@ class PuzzleBoard:
         self.size = len(tiles)
 
         temp_board = []
+        print(tiles)
 
-        for col in range(self.size):
-            temp_board.append(tuple(tiles[col]))
-
+        for row in range(self.size):
+            temp_board.append(tuple(tiles[row]))
         self.board = tuple(temp_board)
 
 
@@ -64,7 +64,7 @@ class PuzzleBoard:
     def get_tile_at(self, row, col):
         """Returns the number of the tile at position (row, col), or 0 if blank
         """
-        return self.board[col][row]
+        return self.board[row][col]
 
     def get_size(self):
         """Returns the board size n
