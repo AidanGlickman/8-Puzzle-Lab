@@ -236,9 +236,25 @@ class DFSPuzzleSolver:
          """Find a solution to the initial puzzle board, up to max_depth, using depth-limited DFS (with backtracking). 
          If graph_search is True, avoid re-exploring paths **see Part 2c** 
          """
-         stack = []
-         for board in initial_board.get_neighbors:
-            pass
+         working = []
+         stack = [initial_board]
+         self.counts["enqueues"] += 1
+         
+         while stack:
+            curr = stack.pop()
+            self.counts["extends"] += 1
+            
+            if curr.is_goal():
+                self.solution.push(curr)
+                while curr != initial_board:
+                    curr = curr.get_parent()
+                    solution.push(curr)
+
+            for neighbor in curr.get_neighbors():
+                if !(neighbor == curr.get_parent()):
+                    stack.push(neighbor)
+                    self.counts["enqueues"] += 1
+
 
 
     def num_moves(self) :
