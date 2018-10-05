@@ -240,12 +240,13 @@ class DFSPuzzleSolver:
 
     counts = {"moves":0, "enqueues":0, "extends":0}
 
-    def __init__(self, initial_board, graph_search = False, max_depth = INF) :
+    def __init__(self, initial_board, graph_search, max_depth) :
          """Find a solution to the initial puzzle board, up to max_depth, using depth-limited DFS (with backtracking). 
          If graph_search is True, avoid re-exploring paths **see Part 2c** 
          """
          finished = False
          stack = []
+         if graph_search: closed = {}
          initial_board = AbstractState(initial_board, None, 0)
          if not initial_board.is_goal():
              stack = [initial_board]
@@ -253,11 +254,20 @@ class DFSPuzzleSolver:
          
          while stack != [] and not finished:
             curr = stack.pop()
+            if graph_search:
+                if curr in closed:
+                    continue
+                closed.add(curr)
             self.counts["extends"] += 1
+            if self.counts["extends"] > max_depth:
+                self.solution = None
+                return
+
             
             if curr.is_goal():
-                self.counts["moves"] = curr.get_path_length()
+                self.solution = curr
                 finished = True
+                return
 
             for neighbor in curr.get_neighbors():
                 if not neighbor == curr.get_parent():
@@ -265,10 +275,9 @@ class DFSPuzzleSolver:
                     self.counts["enqueues"] += 1
 
 
-
     def num_moves(self) :
         """ return number of moves in solution to initial board. If no solution found, return None."""
-        return self.counts["moves"]
+        return self.solution.get_path_length()
 
     def num_enqueues(self) :
         """ return number of nodes enqueued during search, successful or not. """
@@ -280,7 +289,12 @@ class DFSPuzzleSolver:
 
     def get_solution(self) :
         """ returns sequence of PuzzleBoards, initial board to goal board. If no solution found, return None."""
-        return self.solution
+        solution_list = []
+        curr = copy.deepcopy(self.solution)
+        while curr != None:
+            solution_list.insert(0, curr.get_snapshot())
+            curr = curr.get_parent()
+        return tuple(solution_list)
 
 
 
