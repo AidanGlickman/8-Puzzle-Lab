@@ -29,25 +29,25 @@ class PuzzleBoard:
         self.size = len(tiles)
 
         temp_board = []
-        print(tiles)
 
         for row in range(self.size):
             temp_board.append(tuple(tiles[row]))
         self.board = tuple(temp_board)
 
-        solved_board = [[] for x in range(self.size)]
 
-        col = 0
+        solved_list = []
+        num = 0
+        for x in range(0,self.size):
+            solved_list.append([])
+            for y in range(0,self.size):
+                solved_list[x].append(num)
+                num += 1
 
-        for number in range(self.size * self.size):
+        solved_board = []
 
-            if col > len(solved_board) - 1:
-                col = 0
-
-            solved_board[col].append(number)
-            col += 1
-
-        self.goal = solved_board
+        for i in range(self.size):
+            solved_board.append(tuple(solved_list[i]))
+        self.goal = tuple(solved_board)
 
 
 
@@ -75,7 +75,8 @@ class PuzzleBoard:
         """
         return hash(self.board)
 
-
+    def get_goal(self):
+        return self.goal
     def get_tile_at(self, row, col):
         """Returns the number of the tile at position (row, col), or 0 if blank
         """
@@ -246,12 +247,14 @@ class DFSPuzzleSolver:
          If graph_search is True, avoid re-exploring paths **see Part 2c** 
          """
          stack = []
+         initial_board = AbstractState(initial_board, None, 0)
+         print(initial_board.get_snapshot())
+         print(initial_board.get_snapshot().get_goal())
          if not initial_board.is_goal():
-             initial_board = AbstractState(initial_board, None, 0)
              stack = [initial_board]
              self.counts["enqueues"] += 1
          
-         while stack and self.solution == []:
+         while stack != [] and self.solution == []:
             curr = stack.pop()
             self.counts["extends"] += 1
             
