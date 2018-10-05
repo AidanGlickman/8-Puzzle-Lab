@@ -240,29 +240,24 @@ class DFSPuzzleSolver:
 
     counts = {"moves":0, "enqueues":0, "extends":0}
 
-    solution = []
-
     def __init__(self, initial_board, graph_search = False, max_depth = INF) :
          """Find a solution to the initial puzzle board, up to max_depth, using depth-limited DFS (with backtracking). 
          If graph_search is True, avoid re-exploring paths **see Part 2c** 
          """
+         finished = False
          stack = []
          initial_board = AbstractState(initial_board, None, 0)
-         print(initial_board.get_snapshot())
-         print(initial_board.get_snapshot().get_goal())
          if not initial_board.is_goal():
              stack = [initial_board]
              self.counts["enqueues"] += 1
          
-         while stack != [] and self.solution == []:
+         while stack != [] and not finished:
             curr = stack.pop()
             self.counts["extends"] += 1
             
             if curr.is_goal():
-                self.solution.append(curr)
-                while curr != initial_board:
-                    curr = curr.get_parent()
-                    self.solution.append(curr)
+                self.counts["moves"] = curr.get_path_length()
+                finished = True
 
             for neighbor in curr.get_neighbors():
                 if not neighbor == curr.get_parent():
@@ -321,9 +316,9 @@ class BFSPuzzleSolver:
 
         foundGoal = False
 
-        print(initial_board)
+        # print(initial_board)
 
-        print('-------')
+        # print('-------')
 
         # main loop
         while not foundGoal:
@@ -334,8 +329,8 @@ class BFSPuzzleSolver:
                 if board.snapshot.is_goal():
                     goalBoard = board
                     foundGoal = True
-                    print(goalBoard.get_snapshot())
-                    print('FOUND GOAL!')
+                    # print(goalBoard.get_snapshot())
+                    # print('FOUND GOAL!')
                     break
 
                 # extend board
