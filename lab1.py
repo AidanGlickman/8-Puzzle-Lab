@@ -30,24 +30,29 @@ class PuzzleBoard:
 
         temp_board = []
 
-        for row in range(self.size):
-            temp_board.append(tuple(tiles[row]))
+        for col in range(self.size):
+            temp_board.append(tuple(tiles[col]))
+
         self.board = tuple(temp_board)
 
+        solved_board = [[] for x in range(self.size)]
 
-        solved_list = []
-        num = 0
-        for x in range(0,self.size):
-            solved_list.append([])
-            for y in range(0,self.size):
-                solved_list[x].append(num)
-                num += 1
+        col = 0
 
-        solved_board = []
+        for number in range(self.size * self.size):
 
-        for i in range(self.size):
-            solved_board.append(tuple(solved_list[i]))
-        self.goal = tuple(solved_board)
+            if col > len(solved_board) - 1:
+                col = 0
+
+            solved_board[col].append(number)
+            col += 1
+
+
+        temp_goal = []
+        for col in range(self.size):
+            temp_goal.append(tuple(solved_board[col]))
+
+        self.goal = tuple(temp_goal)
 
 
 
@@ -75,12 +80,11 @@ class PuzzleBoard:
         """
         return hash(self.board)
 
-    def get_goal(self):
-        return self.goal
+
     def get_tile_at(self, row, col):
         """Returns the number of the tile at position (row, col), or 0 if blank
         """
-        return self.board[row][col]
+        return self.board[col][row]
 
     def get_size(self):
         """Returns the board size n
@@ -240,24 +244,27 @@ class DFSPuzzleSolver:
 
     counts = {"moves":0, "enqueues":0, "extends":0}
 
+    solution = []
+
     def __init__(self, initial_board, graph_search = False, max_depth = INF) :
          """Find a solution to the initial puzzle board, up to max_depth, using depth-limited DFS (with backtracking). 
          If graph_search is True, avoid re-exploring paths **see Part 2c** 
          """
-         finished = False
          stack = []
-         initial_board = AbstractState(initial_board, None, 0)
          if not initial_board.is_goal():
+             initial_board = AbstractState(initial_board, None, 0)
              stack = [initial_board]
              self.counts["enqueues"] += 1
          
-         while stack != [] and not finished:
+         while stack and self.solution == []:
             curr = stack.pop()
             self.counts["extends"] += 1
             
             if curr.is_goal():
-                self.counts["moves"] = curr.get_path_length()
-                finished = True
+                self.solution.append(curr)
+                while curr != initial_board:
+                    curr = curr.get_parent()
+                    self.solution.append(curr)
 
             for neighbor in curr.get_neighbors():
                 if not neighbor == curr.get_parent():
@@ -304,67 +311,87 @@ class BFSPuzzleSolver:
         If graph_search is True, avoid re-exploring paths **see Part 2c**
         """
 
-        # ordered list of enqueued boards
-        queue = [AbstractState(initial_board, None, 0)]
-        steps = 1
+        # FIFO Queue
+        queue = deque()
 
-        goalBoard = None
+        # enqueue initial node
+        queue.append(AbstractState(initial_board, None, 0))
 
-        # use if graph_search = True - List of extended nodes
-        extended = []
-        expanded = []
+        # set of visited boards
+        visited = set()
 
-        foundGoal = False
+        meta = {'enqueues': 1, 'extends': 0}
 
-        # print(initial_board)
+        i = 1
 
-        # print('-------')
+        while len(queue) > 0:
 
-        # main loop
-        while not foundGoal:
+            node = queue.popleft()
 
-            for board in queue:
+            meta['extends'] += 1
 
-                # goal found
-                if board.snapshot.is_goal():
-                    goalBoard = board
-                    foundGoal = True
-                    # print(goalBoard.get_snapshot())
-                    # print('FOUND GOAL!')
-                    break
+            if node.is_goal():
+                self.solution = node
+                queue = deque()
+                print('Found Solution!')
+                break
 
-                # extend board
-                for neighbor in board.snapshot.get_neighbors():
+            if graph_search and node.get_snapshot() in visited:
+                continue
 
-                    if (not graph_search) or ((graph_search and not neighbor in extended) and not (graph_search and neighbor in expanded)):
-                        queue.append(AbstractState(PuzzleBoard(neighbor.board), board, board.get_path_length()+1))
+            for neighbor in node.get_snapshot().get_neighbors():
+                if graph_search and neighbor in visited:
+                    continue
 
-                steps += 1
+                queue.append(AbstractState(neighbor, node, node.get_path_length()+1))
 
-                extended.append(board)
+                meta['enqueues'] += 1
 
-                queue.remove(board)
+            visited.add(node)
 
-        self.moves = steps
-        self.solution = goalBoard
-        self.enqueues = len(expanded)
-        self.extended = len(extended)
+            print(len(visited))
+
+        self.meta = meta
+
 
     def num_moves(self) :
         """ return number of moves in solution to initial board. If no solution found, return None."""
-        return self.moves
+        if self.solution:
+
+            node = self.solution.get_parent()
+            moves = 0
+
+            while node is not None:
+                moves += 1
+                node = self.solution.get_parent()
+
+            return moves
+
+        return None
 
     def num_enqueues(self) :
         """ return number of nodes enqueued during search, successful or not. """
-        return self.enqueues
+        return self.meta['enqueues']
 
     def num_extends(self) :
         """ return number of nodes extended/expanded during search, successful or not. """
-        return self.extended
+        return self.meta['extends']
 
     def get_solution(self) :
         """ returns sequence of boards, initial board to goal board. If no solution found, return None."""
-        return self.solution
+        if self.solution:
+
+            node = self.solution.get_parent()
+            actions = [self.solution.get_snapshot()]
+
+            while node is not None:
+                actions.append(node.get_snapshot())
+
+                node = self.solution.get_parent()
+
+            return reversed(actions)
+
+        return None
 
 """ Use bfschecker.py to check that your BFSPuzzleSolver works properly.
 Writing your own tests below is also a good idea.
