@@ -318,67 +318,87 @@ class BFSPuzzleSolver:
         If graph_search is True, avoid re-exploring paths **see Part 2c**
         """
 
-        # ordered list of enqueued boards
-        queue = [AbstractState(initial_board, None, 0)]
-        steps = 1
+        # FIFO Queue
+        queue = deque()
 
-        goalBoard = None
+        # enqueue initial node
+        queue.append(AbstractState(initial_board, None, 0))
 
-        # use if graph_search = True - List of extended nodes
-        extended = []
-        expanded = []
+        # set of visited boards
+        visited = set()
 
-        foundGoal = False
+        meta = {'enqueues': 1, 'extends': 0}
 
-        # print(initial_board)
+        i = 1
 
-        # print('-------')
+        while len(queue) > 0:
 
-        # main loop
-        while not foundGoal:
+            node = queue.popleft()
 
-            for board in queue:
+            meta['extends'] += 1
 
-                # goal found
-                if board.snapshot.is_goal():
-                    goalBoard = board
-                    foundGoal = True
-                    # print(goalBoard.get_snapshot())
-                    # print('FOUND GOAL!')
-                    break
+            if node.is_goal():
+                self.solution = node
+                queue = deque()
+                print('Found Solution!')
+                break
 
-                # extend board
-                for neighbor in board.snapshot.get_neighbors():
+            if graph_search and node.get_snapshot() in visited:
+                continue
 
-                    if (not graph_search) or ((graph_search and not neighbor in extended) and not (graph_search and neighbor in expanded)):
-                        queue.append(AbstractState(PuzzleBoard(neighbor.board), board, board.get_path_length()+1))
+            for neighbor in node.get_snapshot().get_neighbors():
+                if graph_search and neighbor in visited:
+                    continue
 
-                steps += 1
+                queue.append(AbstractState(neighbor, node, node.get_path_length()+1))
 
-                extended.append(board)
+                meta['enqueues'] += 1
 
-                queue.remove(board)
+            visited.add(node)
 
-        self.moves = steps
-        self.solution = goalBoard
-        self.enqueues = len(expanded)
-        self.extended = len(extended)
+            print(len(visited))
+
+        self.meta = meta
+
 
     def num_moves(self) :
         """ return number of moves in solution to initial board. If no solution found, return None."""
-        return self.moves
+        if self.solution:
+
+            node = self.solution.get_parent()
+            moves = 0
+
+            while node is not None:
+                moves += 1
+                node = self.solution.get_parent()
+
+            return moves
+
+        return None
 
     def num_enqueues(self) :
         """ return number of nodes enqueued during search, successful or not. """
-        return self.enqueues
+        return self.meta['enqueues']
 
     def num_extends(self) :
         """ return number of nodes extended/expanded during search, successful or not. """
-        return self.extended
+        return self.meta['extends']
 
     def get_solution(self) :
         """ returns sequence of boards, initial board to goal board. If no solution found, return None."""
-        return self.solution
+        if self.solution:
+
+            node = self.solution.get_parent()
+            actions = [self.solution.get_snapshot()]
+
+            while node is not None:
+                actions.append(node.get_snapshot())
+
+                node = self.solution.get_parent()
+
+            return reversed(actions)
+
+        return None
 
 """ Use bfschecker.py to check that your BFSPuzzleSolver works properly.
 Writing your own tests below is also a good idea.
