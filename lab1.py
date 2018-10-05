@@ -339,8 +339,6 @@ class BFSPuzzleSolver:
 
             if node.is_goal():
                 self.solution = node
-                queue = deque()
-                print('Found Solution!')
                 break
 
             if graph_search and node.get_snapshot() in visited:
@@ -354,9 +352,8 @@ class BFSPuzzleSolver:
 
                 meta['enqueues'] += 1
 
-            visited.add(node)
-
-            print(len(visited))
+            if graph_search:
+                visited.add(node)
 
         self.meta = meta
 
@@ -370,7 +367,7 @@ class BFSPuzzleSolver:
 
             while node is not None:
                 moves += 1
-                node = self.solution.get_parent()
+                node = node.get_parent()
 
             return moves
 
@@ -394,7 +391,7 @@ class BFSPuzzleSolver:
             while node is not None:
                 actions.append(node.get_snapshot())
 
-                node = self.solution.get_parent()
+                node = node.get_parent()
 
             return reversed(actions)
 
