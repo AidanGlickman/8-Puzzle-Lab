@@ -329,8 +329,6 @@ class BFSPuzzleSolver:
 
         meta = {'enqueues': 1, 'extends': 0}
 
-        i = 1
-
         while len(queue) > 0:
 
             node = queue.popleft()
@@ -424,11 +422,47 @@ break the algorithm!
 
 def hamming(board):
     """ Return the Hamming distance (number of tiles out of place) of the PuzzleBoard """
-    raise NotImplementedError
+
+    goal = board.goal
+    board = board.board
+
+    i = 0
+
+    for col in range(len(goal)):
+        for row in range(len(goal)):
+            if goal[col][row] is not board[col][row]:
+                i += 1
+
+    return i
+
 
 def manhattan(board):
     """ Return the sum of Manhattan distances between tiles and goal of the PuzzleBoard """
-    raise NotImplementedError
+
+    total = 0
+
+    goal = board.goal
+    board = board.board
+
+    i = 0
+
+    goalPositions = {}
+
+    for col in range(len(goal)):
+        for row in range(len(goal)):
+            tile = goal[col][row]
+            goalPositions[tile] = (col, row)
+
+    for col in range(len(board)):
+        for row in range(len(board)):
+            tile = goal[col][row]
+
+            gCol, gRow = goalPositions[tile]
+
+            if gCol is not col and gRow is not row:
+                total += math.sqrt((col+gCol)**2 + (gRow+row)**2)
+
+    return total
 
 
 ### 3b. Implement HllClimbingPuzzleSolver, which perform Hill-Climbing search
