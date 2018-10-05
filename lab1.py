@@ -239,6 +239,7 @@ The append() and pop() methods will be handy.
 class DFSPuzzleSolver:
 
     counts = {"moves":0, "enqueues":0, "extends":0}
+    solution = AbstractState(None, None, 0)
 
     def __init__(self, initial_board, graph_search, max_depth) :
          """Find a solution to the initial puzzle board, up to max_depth, using depth-limited DFS (with backtracking). 
@@ -246,11 +247,13 @@ class DFSPuzzleSolver:
          """
          finished = False
          stack = []
-         if graph_search: closed = {}
+         if graph_search: closed = set()
          initial_board = AbstractState(initial_board, None, 0)
          if not initial_board.is_goal():
              stack = [initial_board]
              self.counts["enqueues"] += 1
+         else:
+            solution = initial_board
          
          while stack != [] and not finished:
             curr = stack.pop()
@@ -277,7 +280,11 @@ class DFSPuzzleSolver:
 
     def num_moves(self) :
         """ return number of moves in solution to initial board. If no solution found, return None."""
-        return self.solution.get_path_length()
+        try:
+            return self.solution.get_path_length()
+        except Exception as e:
+            return -1
+        
 
     def num_enqueues(self) :
         """ return number of nodes enqueued during search, successful or not. """

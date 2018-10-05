@@ -36,8 +36,8 @@ if argv[1] in PUZZLE_SETS:
         puzz_set += "-"
 
 # print header
-print("{:25} {:>7s} {:>8s} {:>10} {:>10}".format("filename", "moves", "time", "enqueues", "extends"));
-print("----------------------------------------------------------------");
+print("{:25} {:>7s} {:>8s} {:>10} {:>10}".format("filename", "moves", "time", "enqueues", "extends"))
+print("----------------------------------------------------------------")
 
 # for each command-line argument, or member in a set
 for i in range(1 if (puzz_set is None) else 0, num_puzzles):
