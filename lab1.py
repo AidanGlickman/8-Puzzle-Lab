@@ -356,15 +356,15 @@ class BFSPuzzleSolver:
                 self.solution = node
                 break
 
-            if graph_search and node.get_snapshot() in visited:
+            if graph_search and node in visited:
                 continue
 
-            for neighbor in node.get_snapshot().get_neighbors():
+            for neighbor in node.get_neighbors():
                 if graph_search and neighbor in visited:
                     continue
 
                 if neighbor.notailbite():
-                    queue.append(AbstractState(neighbor, node, node.get_path_length()+1))
+                    queue.append(neighbor)
                     meta['enqueues'] += 1
 
             if graph_search:
