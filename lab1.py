@@ -2,7 +2,7 @@
 # Name(s): Aidan Glickman, Anthony Lekan
 # Email(s): aidgli20@bergen.org, antlek21@bergen.org
 from collections import deque
-import heapq
+from heapq import *
 import copy
 import math
 
@@ -214,6 +214,15 @@ class AbstractState:
             neighbors.append(AbstractState(board, self, self.path_length+1))
         return neighbors
 
+    def notailbite(self):
+        while node.parent.snaspshot != self.snapshot: 
+            if not self.parent:
+                return True
+
+            node = self.parent
+        return False
+
+
     """Feel free to write additional helper methods. Keep in mind, however, that AbstractState 
     will be used for all of our algorithms, so make sure that its functionality is 
     straightforward enough to be generally useful.
@@ -274,7 +283,7 @@ class DFSPuzzleSolver:
                 return
 
             for neighbor in curr.get_neighbors():
-                if not neighbor == curr.get_parent():
+                if not neighbor.notailbite():
                     stack.append(neighbor)
                     self.counts["enqueues"] += 1
 
@@ -431,31 +440,14 @@ def hamming(board):
 
 def manhattan(board):
     """ Return the sum of Manhattan distances between tiles and goal of the PuzzleBoard """
+    n = len(board.board)
 
-    total = 0
-
-    goal = board.get_goal()
-    board = board.board
-
-    i = 0
-
-    goalPositions = {}
-
-    for col in range(len(goal)):
-        for row in range(len(goal)):
-            tile = goal[col][row]
-            goalPositions[tile] = (col, row)
-
-    for col in range(len(board)):
-        for row in range(len(board)):
-            tile = board[col][row]
-
-            gCol, gRow = goalPositions[tile]
-
-            if gCol is not col and gRow is not row:
-                total += math.sqrt((col+gCol)**2 + (gRow+row)**2)
-    total = int(total)
-    return total
+    h = 0
+    for y in range(n):
+        for x in range(n):
+            y_, x_ = divmod(board.board[y][x], n)
+            h += abs(y_- y) + abs(x_- x)
+    return h
 
 
 ### 3b. Implement HllClimbingPuzzleSolver, which perform Hill-Climbing search
@@ -471,31 +463,44 @@ class HillClimbingPuzzleSolver:
     counts = {"enqueues":0, "extends":0}
     solution = AbstractState(None, None, 0)
 
-    def __init__(self, initial_board, graph_search = False, heuristic_fn = manhattan, max_depth = INF) :
-        """find a solution to the initial puzzle board , up to max_depth, using Hill Climbing with backtracking. 
-        heuristic_fn should be used to evaluate the order of states to extend. 
-        If graph_search is True, avoid re-exploring paths. 
-        """
-        board = AbstractState(initial_board, None, 0)
-        neighbors = []
-        while True:
-            neighbors = board.get_neighbors()
-            nextEval = heuristic_fn(board.get_snapshot())
-            nextBoard = None
-            neighbors.sort(lambda s: heuristic_fn(s))
-            self.counts["enqueues"] += len(neighbors)
-            best_neighbor = neighbors[0]
-            if heuristic_fn(best_neighbor.get_snapshot()) < nextEval:
-                self.counts["extends"] += 1
-                nextBoard = neighbor
-                nextEval = heuristic_fn(neighbor.get_snapshot())
-            else:
-                self.solution = board
+    def __init__(self, initial_board, graph_search, heuristic_fn = manhattan, max_depth = INF):
+        finished = False
+        stack = []
+
+        if graph_search: closed = set()
+        initial_board = AbstractState(initial_board, None, 0)
+        if not initial_board.is_goal():
+            stack = [initial_board]
+            self.counts["enqueues"] += 1
+        else:
+            solution = initial_board
+
+        while stack != [] and not finished:
+            curr = stack.pop()
+            if graph_search:
+                if curr in closed:
+                    continue
+                closed.add(curr)
+            self.counts["extends"] += 1
+            if self.counts["extends"] > max_depth:
+                self.solution = None
                 return
-            board = nextBoard
 
 
-    def num_moves(self) :
+            if curr.is_goal():
+                self.solution = curr
+                finished = True
+                return
+
+            neighbors = curr.get_neighbors()
+            neighbors.sort(key = lambda s: heuristic_fn(s.get_snapshot()), reverse = True)
+            for neighbor in neighbors:
+                if not neighbor == curr.get_parent():
+                    stack.append(neighbor)
+                    self.counts["enqueues"] += 1
+
+
+    def num_moves(self):
         """ return number of moves in solution to initial board. If no solution found, return None."""
         try:
             return self.solution.get_path_length()
@@ -537,28 +542,70 @@ https://docs.python.org/3/library/heapq.html
 
 class GreedyBestPuzzleSolver:
 
-    def __init__(self, initial_board, graph_search = False, heuristic_fn = manhattan) :
+    counts = {"enqueues":0, "extends":0}
+    solution = AbstractState(None, None, 0)
+
+    def __init__(self, initial_board, graph_search = False, heuristic_fn = manhattan, max_depth = INF) :
         """find a solution to the initial puzzle board, up to max_depth, using Greedy Best-first search.
         heuristic_fn should be used to evaluate the order of states to extend. 
         If graph_search is True, avoid re-exploring paths. 
         """
-        raise NotImplementedError
+        finished = False
+        stack = []
+        if graph_search: closed = set()
+        initial_board = AbstractState(initial_board, None, 0)
+        if not initial_board.is_goal():
+            heappush(stack, (heuristic_fn(initial_board.get_snapshot()), initial_board))
+            self.counts["enqueues"] += 1
+        else:
+            solution = initial_board
 
-    def num_moves(self) :
+        while stack != [] and not finished:
+            curr = heappop(stack)[1]
+            if graph_search:
+                if curr in closed:
+                    continue
+                closed.add(curr)
+            self.counts["extends"] += 1
+            if self.counts["extends"] > max_depth:
+                self.solution = None
+                return
+
+            
+            if curr.is_goal():
+                self.solution = curr
+                finished = True
+                return
+
+            for neighbor in curr.get_neighbors():
+                if not neighbor == curr.get_parent():
+                    heappush(stack, (heuristic_fn(neighbor.get_snapshot()), neighbor))
+                    self.counts["enqueues"] += 1
+
+
+    def num_moves(self):
         """ return number of moves in solution to initial board. If no solution found, return None."""
-        raise NotImplementedError
+        try:
+            return self.solution.get_path_length()
+        except Exception as e:
+            return None
 
     def num_enqueues(self) :
         """ return number of nodes enqueued during search, successful or not. """
-        raise NotImplementedError
+        return self.counts["enqueues"]
 
     def num_extends(self) :
         """ return number of nodes extended/expanded during search, successful or not. """
-        raise NotImplementedError
+        return self.counts["extends"]
 
     def get_solution(self) :
         """ returns sequence of boards, initial board to goal board. If no solution found, return None."""
-        raise NotImplementedError
+        solution_list = []
+        curr = copy.deepcopy(self.solution)
+        while curr != None:
+            solution_list.insert(0, curr.get_snapshot())
+            curr = curr.get_parent()
+        return tuple(solution_list)
 
 
 """ Use greedybestchecker.py to check that your GreedyBestPuzzleSolver works properly.
