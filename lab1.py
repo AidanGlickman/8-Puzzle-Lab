@@ -77,6 +77,7 @@ class PuzzleBoard:
 
     def get_goal(self):
         return self.goal
+
     def get_tile_at(self, row, col):
         """Returns the number of the tile at position (row, col), or 0 if blank
         """
@@ -238,7 +239,7 @@ The append() and pop() methods will be handy.
 
 class DFSPuzzleSolver:
 
-    counts = {"moves":0, "enqueues":0, "extends":0}
+    counts = {"enqueues":0, "extends":0}
     solution = AbstractState(None, None, 0)
 
     def __init__(self, initial_board, graph_search, max_depth) :
@@ -254,7 +255,7 @@ class DFSPuzzleSolver:
              self.counts["enqueues"] += 1
          else:
             solution = initial_board
-         
+
          while stack != [] and not finished:
             curr = stack.pop()
             if graph_search:
@@ -283,7 +284,7 @@ class DFSPuzzleSolver:
         try:
             return self.solution.get_path_length()
         except Exception as e:
-            return -1
+            return None
         
 
     def num_enqueues(self) :
@@ -365,18 +366,10 @@ class BFSPuzzleSolver:
 
     def num_moves(self) :
         """ return number of moves in solution to initial board. If no solution found, return None."""
-        if self.solution:
-
-            node = self.solution.get_parent()
-            moves = 0
-
-            while node is not None:
-                moves += 1
-                node = node.get_parent()
-
-            return moves
-
-        return None
+        try:
+            return self.solution.get_path_length()
+        except Exception as e:
+            return None
 
     def num_enqueues(self) :
         """ return number of nodes enqueued during search, successful or not. """
@@ -388,19 +381,12 @@ class BFSPuzzleSolver:
 
     def get_solution(self) :
         """ returns sequence of boards, initial board to goal board. If no solution found, return None."""
-        if self.solution:
-
-            node = self.solution.get_parent()
-            actions = [self.solution.get_snapshot()]
-
-            while node is not None:
-                actions.append(node.get_snapshot())
-
-                node = node.get_parent()
-
-            return reversed(actions)
-
-        return None
+        solution_list = []
+        curr = copy.deepcopy(self.solution)
+        while curr != None:
+            solution_list.insert(0, curr.get_snapshot())
+            curr = curr.get_parent()
+        return tuple(solution_list)
 
 """ Use bfschecker.py to check that your BFSPuzzleSolver works properly.
 Writing your own tests below is also a good idea.
@@ -482,29 +468,53 @@ it will sort by the value of the first element.
 
 class HillClimbingPuzzleSolver:
 
+    counts = {"enqueues":0, "extends":0}
+    solution = AbstractState(None, None, 0)
+
     def __init__(self, initial_board, graph_search = False, heuristic_fn = manhattan, max_depth = INF) :
         """find a solution to the initial puzzle board , up to max_depth, using Hill Climbing with backtracking. 
         heuristic_fn should be used to evaluate the order of states to extend. 
         If graph_search is True, avoid re-exploring paths. 
         """
-        raise NotImplementedError
+        board = AbstractState(initial_board, None, 0)
+        neighbors = []
+        while True:
+            neighbors = board.get_neighbors()
+            nextEval = heuristic_fn(board.get_snapshot())
+            nextBoard = None
+            for neighbor in neighbors:
+                if heuristic_fn(neighbor.get_snapshot()) < nextEval:
+                    nextBoard = neighbor
+                    nextEval = heuristic_fn(neighbor.get_snapshot())
+            if nextEval >= heuristic_fn(board.get_snapshot()):
+                self.solution = board
+                return
+            board = nextBoard
 
 
     def num_moves(self) :
         """ return number of moves in solution to initial board. If no solution found, return None."""
-        raise NotImplementedError
+        try:
+            return self.solution.get_path_length()
+        except Exception as e:
+            return None
 
     def num_enqueues(self) :
         """ return number of nodes enqueued during search, successful or not. """
-        raise NotImplementedError
+        return self.counts["enqueues"]
 
     def num_extends(self) :
         """ return number of nodes extended/expanded during search, successful or not. """
-        raise NotImplementedError
+        return self.counts["extends"]
 
     def get_solution(self) :
         """ returns sequence of boards, initial board to goal board. If no solution found, return None."""
-        raise NotImplementedError
+        solution_list = []
+        curr = copy.deepcopy(self.solution)
+        while curr != None:
+            solution_list.insert(0, curr.get_snapshot())
+            curr = curr.get_parent()
+        return tuple(solution_list)
 
 
 """ Use hillclimbingchecker.py to check that your HillClimbingPuzzleSolver works properly.
