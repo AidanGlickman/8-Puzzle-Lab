@@ -7,7 +7,7 @@ on the command line and outputs various checks.
 """
 
 ### You can turn this test on when you've implemented hamming and manhattan
-TEST_HEURISTICS = False
+TEST_HEURISTICS = True
 ###########################################################################
 
 # for each command-line argument

@@ -448,7 +448,7 @@ def manhattan(board):
 
     total = 0
 
-    goal = board.goal
+    goal = board.get_goal()
     board = board.board
 
     i = 0
@@ -462,13 +462,13 @@ def manhattan(board):
 
     for col in range(len(board)):
         for row in range(len(board)):
-            tile = goal[col][row]
+            tile = board[col][row]
 
             gCol, gRow = goalPositions[tile]
 
             if gCol is not col and gRow is not row:
                 total += math.sqrt((col+gCol)**2 + (gRow+row)**2)
-
+    total = int(total)
     return total
 
 
