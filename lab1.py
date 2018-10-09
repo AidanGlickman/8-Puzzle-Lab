@@ -215,12 +215,13 @@ class AbstractState:
         return neighbors
 
     def notailbite(self):
-        while node.parent.snaspshot != self.snapshot: 
+        node = self
+        while node.snapshot != self.snapshot: 
             if not self.parent:
-                return True
+                return False
 
-            node = self.parent
-        return False
+            node = node.parent
+        return True
 
 
     """Feel free to write additional helper methods. Keep in mind, however, that AbstractState 
@@ -255,7 +256,6 @@ class DFSPuzzleSolver:
          """Find a solution to the initial puzzle board, up to max_depth, using depth-limited DFS (with backtracking). 
          If graph_search is True, avoid re-exploring paths **see Part 2c** 
          """
-         finished = False
          stack = []
          if graph_search: closed = set()
          initial_board = AbstractState(initial_board, None, 0)
@@ -264,8 +264,9 @@ class DFSPuzzleSolver:
              self.counts["enqueues"] += 1
          else:
             solution = initial_board
+            return
 
-         while stack != [] and not finished:
+         while stack != []:
             curr = stack.pop()
             if graph_search:
                 if curr in closed:
@@ -279,11 +280,10 @@ class DFSPuzzleSolver:
             
             if curr.is_goal():
                 self.solution = curr
-                finished = True
                 return
 
             for neighbor in curr.get_neighbors():
-                if not neighbor.notailbite():
+                if neighbor.notailbite():
                     stack.append(neighbor)
                     self.counts["enqueues"] += 1
 
@@ -363,9 +363,9 @@ class BFSPuzzleSolver:
                 if graph_search and neighbor in visited:
                     continue
 
-                queue.append(AbstractState(neighbor, node, node.get_path_length()+1))
-
-                meta['enqueues'] += 1
+                if neighbor.notailbite():
+                    queue.append(AbstractState(neighbor, node, node.get_path_length()+1))
+                    meta['enqueues'] += 1
 
             if graph_search:
                 visited.add(node)
@@ -495,7 +495,7 @@ class HillClimbingPuzzleSolver:
             neighbors = curr.get_neighbors()
             neighbors.sort(key = lambda s: heuristic_fn(s.get_snapshot()), reverse = True)
             for neighbor in neighbors:
-                if not neighbor == curr.get_parent():
+                if neighbor.notailbite():
                     stack.append(neighbor)
                     self.counts["enqueues"] += 1
 
@@ -578,7 +578,7 @@ class GreedyBestPuzzleSolver:
                 return
 
             for neighbor in curr.get_neighbors():
-                if not neighbor == curr.get_parent():
+                if neighbor.notailbite():
                     heappush(stack, (heuristic_fn(neighbor.get_snapshot()), neighbor))
                     self.counts["enqueues"] += 1
 
@@ -626,29 +626,68 @@ def zero_heuristic(board):
 
 class AStarPuzzleSolver:
 
+    counts = {"enqueues":0, "extends":0}
+    solution = AbstractState(None, None, 0)
+
     def __init__(self, initial_board, graph_search = False, heuristic_fn = manhattan) :
         """find a OPTIMAL solution to the initial puzzle board, using A* search. 
         heuristic_fn should be used in the evaluation of order of states to extend.
         If graph_search is True, the algorithm should avoid enqueueing previously *extended* (not enqueued) states.
         Do not worry about updating already enqueued states; simply re-enqueue with the new values.
         """
-        raise NotImplementedError
+        finished = False
+        stack = []
+        if graph_search: closed = set()
+        initial_board = AbstractState(initial_board, None, 0)
+        if not initial_board.is_goal():
+            heappush(stack, (heuristic_fn(initial_board.get_snapshot()) + initial_board.get_path_length(), initial_board))
+            self.counts["enqueues"] += 1
+        else:
+            solution = initial_board
 
-    def num_moves() :
+        while stack != [] and not finished:
+            curr = heappop(stack)[1]
+            if graph_search:
+                if curr in closed:
+                    continue
+                closed.add(curr)
+            self.counts["extends"] += 1
+
+            
+            if curr.is_goal():
+                self.solution = curr
+                finished = True
+                return
+
+            for neighbor in curr.get_neighbors():
+                if neighbor.notailbite():
+                    heappush(stack, (heuristic_fn(neighbor.get_snapshot()) + neighbor.get_path_length(), neighbor))
+                    self.counts["enqueues"] += 1
+
+
+    def num_moves(self):
         """ return number of moves in solution to initial board. If no solution found, return None."""
-        raise NotImplementedError
+        try:
+            return self.solution.get_path_length()
+        except Exception as e:
+            return None
 
-    def num_enqueues() :
+    def num_enqueues(self) :
         """ return number of nodes enqueued during search, successful or not. """
-        raise NotImplementedError
+        return self.counts["enqueues"]
 
-    def num_extends() :
+    def num_extends(self) :
         """ return number of nodes extended/expanded during search, successful or not. """
-        raise NotImplementedError
+        return self.counts["extends"]
 
-    def get_solution() :
-        """ returns sequence of boards in found solution. If no solution found, return None."""
-        raise NotImplementedError
+    def get_solution(self) :
+        """ returns sequence of boards, initial board to goal board. If no solution found, return None."""
+        solution_list = []
+        curr = copy.deepcopy(self.solution)
+        while curr != None:
+            solution_list.insert(0, curr.get_snapshot())
+            curr = curr.get_parent()
+        return tuple(solution_list)
 
 """ Write tests to check that your AStarPuzzleSolver works properly """
 

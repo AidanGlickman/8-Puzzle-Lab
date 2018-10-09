@@ -7,7 +7,7 @@ on the command line (or a set) and runs AStarPuzzleSolver on it.
 """
 ### Alter these flags to set parameters for search #########################
 
-GRAPH_SEARCH = False
+GRAPH_SEARCH = True
 
 HEURISTIC_FN = hamming
 
@@ -45,7 +45,7 @@ for i in range(1 if (puzz_set is None) else 0, num_puzzles):
         for j in range(n):            
             row = [int(x) for x in file.readline().split()]
             tiles.append(row)
-    board = PuzzleBoard(tiles,n)
+    board = PuzzleBoard(tiles)
 
     # run the solver 
     start = timer()

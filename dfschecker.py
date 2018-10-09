@@ -8,7 +8,7 @@ on the command line (or a set) and runs DFSPuzzleSolver on it.
 """
 ### Alter these flags to set parameters for search #########################
 
-GRAPH_SEARCH = False
+GRAPH_SEARCH = True
 
 MAX_DEPTH = INF
 
