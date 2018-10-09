@@ -482,11 +482,14 @@ class HillClimbingPuzzleSolver:
             neighbors = board.get_neighbors()
             nextEval = heuristic_fn(board.get_snapshot())
             nextBoard = None
-            for neighbor in neighbors:
-                if heuristic_fn(neighbor.get_snapshot()) < nextEval:
-                    nextBoard = neighbor
-                    nextEval = heuristic_fn(neighbor.get_snapshot())
-            if nextEval >= heuristic_fn(board.get_snapshot()):
+            neighbors.sort(lambda s: heuristic_fn(s))
+            self.counts["enqueues"] += len(neighbors)
+            best_neighbor = neighbors[0]
+            if heuristic_fn(best_neighbor.get_snapshot()) < nextEval:
+                self.counts["extends"] += 1
+                nextBoard = neighbor
+                nextEval = heuristic_fn(neighbor.get_snapshot())
+            else:
                 self.solution = board
                 return
             board = nextBoard
