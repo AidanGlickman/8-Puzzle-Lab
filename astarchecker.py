@@ -9,7 +9,7 @@ on the command line (or a set) and runs AStarPuzzleSolver on it.
 
 GRAPH_SEARCH = True
 
-HEURISTIC_FN = hamming
+HEURISTIC_FN = manhattan
 
 ### Set this flag to print out the full solution found to the puzzles
 VERBOSE_SOLUTIONS = False

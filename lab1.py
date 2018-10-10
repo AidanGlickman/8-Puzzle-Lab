@@ -19,7 +19,7 @@ class PuzzleBoard:
     board = ()
     goal = ()
 
-    def __init__(self, tiles) :
+    def __init__(self, tiles, empty=None) :
         """Creates a PuzzleBoard from an n-by-n array of tiles, where
         tiles[row][col] = tile at (row, col). 
         NOTE: You may alter this function's signature as long as the only required
@@ -33,6 +33,11 @@ class PuzzleBoard:
         for row in range(self.size):
             temp_board.append(tuple(tiles[row]))
         self.board = tuple(temp_board)
+
+        if empty is None:
+            self.empty = self.find_empty()
+        else:
+            self.empty = empty
 
 
         solved_list = []
@@ -50,6 +55,11 @@ class PuzzleBoard:
         self.goal = tuple(solved_board)
 
 
+    def find_empty(self):
+        for y in range(self.size):
+            for x in range(self.size):
+                if self.board[y][x] == 0:
+                    return (y,x)
 
     def __str__(self):
         """Returns a string representation of the board. 
@@ -96,53 +106,16 @@ class PuzzleBoard:
     def get_neighbors(self):
         """Generate and return all neighboring boards in an iterable (e.g. list)
         """
-        blank = (INF, INF)
-        row = 0
-        col = 0
-
-        # while blank == (INF, INF):
-        #     if self.board[row][col] == 0:
-        #         blank = (row, col)
-        #         break
-        #     row += 1
-        #     col += 1
-
-        for c in range(self.size):
-            for r in range(self.size):
-
-                if self.board[c][r] == 0:
-                    blank = (r, c)
-
-                row += 1
-
-            col += 1
-
-        posTiles = [(blank[0]-1, blank[1]), (blank[0], blank[1]-1), (blank[0]+1, blank[1]), (blank[0], blank[1]+1)]
-        validTiles = []
-
-        i = 0
-
-        for tile in posTiles:
-            if not(tile[0] < 0 or tile[0] >= len(self.board) or tile[1] < 0 or tile[1] >= len(self.board)):
-                validTiles.append(tile)
-            i += 1
-
-        neighbors = []
-
-        listBoard = []
-        for row in self.board:
-            listBoard.append(list(row))
-
-        for tile in validTiles:
-            newBoard = copy.deepcopy(listBoard)
-
-            newBoard[blank[1]][blank[0]] = newBoard[tile[1]][tile[0]]
-            newBoard[tile[1]][tile[0]] = 0
-
-            newBoard = PuzzleBoard(newBoard)
-            neighbors.append(newBoard)
-
-        return neighbors
+        offs = [[-1, 0], [0, -1], [1, 0], [0, 1]]
+        for off in offs:
+            switchy = off[0] + self.empty[0]
+            switchx = off[1] + self.empty[1]
+            if 0 <= switchy < self.size and 0 <= switchx < self.size:
+                newboard = list(list(x) for x in self.board)
+                newboard[self.empty[0]][self.empty[1]] = newboard[switchy][switchx]
+                newboard[switchy][switchx] = 0
+                newboard = tuple(tuple(x) for x in newboard)
+                yield PuzzleBoard(newboard, empty=(switchy, switchx))
 
     """Feel free to write additional helper methods. Keep in mind, however, that AbstractState 
     will be used for all of our algorithms, so make sure that its functionality is 
@@ -635,17 +608,17 @@ class AStarPuzzleSolver:
         If graph_search is True, the algorithm should avoid enqueueing previously *extended* (not enqueued) states.
         Do not worry about updating already enqueued states; simply re-enqueue with the new values.
         """
-        finished = False
         stack = []
         if graph_search: closed = set()
         initial_board = AbstractState(initial_board, None, 0)
         if not initial_board.is_goal():
-            heappush(stack, (heuristic_fn(initial_board.get_snapshot()) + initial_board.get_path_length(), initial_board))
+            heappush(stack, (heuristic_fn(initial_board.get_snapshot()) + initial_board.get_path_length()*2, initial_board))
             self.counts["enqueues"] += 1
         else:
             solution = initial_board
+            return
 
-        while stack != [] and not finished:
+        while True:
             curr = heappop(stack)[1]
             if graph_search:
                 if curr in closed:
@@ -656,12 +629,11 @@ class AStarPuzzleSolver:
             
             if curr.is_goal():
                 self.solution = curr
-                finished = True
                 return
 
             for neighbor in curr.get_neighbors():
-                if neighbor.notailbite():
-                    heappush(stack, (heuristic_fn(neighbor.get_snapshot()) + neighbor.get_path_length(), neighbor))
+                if graph_search or neighbor.notailbite():
+                    heappush(stack, (heuristic_fn(neighbor.get_snapshot()) + neighbor.get_path_length()*2, neighbor))
                     self.counts["enqueues"] += 1
 
 
