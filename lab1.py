@@ -612,7 +612,7 @@ class AStarPuzzleSolver:
         if graph_search: closed = set()
         initial_board = AbstractState(initial_board, None, 0)
         if not initial_board.is_goal():
-            heappush(stack, (heuristic_fn(initial_board.get_snapshot()) + initial_board.get_path_length()*2, initial_board))
+            heappush(stack, (heuristic_fn(initial_board.get_snapshot()) + initial_board.get_path_length(), initial_board))
             self.counts["enqueues"] += 1
         else:
             solution = initial_board
@@ -633,7 +633,7 @@ class AStarPuzzleSolver:
 
             for neighbor in curr.get_neighbors():
                 if graph_search or neighbor.notailbite():
-                    heappush(stack, (heuristic_fn(neighbor.get_snapshot()) + neighbor.get_path_length()*2, neighbor))
+                    heappush(stack, (heuristic_fn(neighbor.get_snapshot()) + neighbor.get_path_length(), neighbor))
                     self.counts["enqueues"] += 1
 
 
