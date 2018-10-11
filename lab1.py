@@ -4,7 +4,6 @@
 from collections import deque
 from heapq import *
 import copy
-import math
 
 INF = float('inf')
 
@@ -188,6 +187,10 @@ class AbstractState:
         return neighbors
 
     def notailbite(self):
+        """
+        Searches through this nodes children to check whether any tailbiting has occurred
+        """
+
         node = self
         while node.snapshot != self.snapshot: 
             if not self.parent:
@@ -232,6 +235,7 @@ class DFSPuzzleSolver:
          stack = []
          if graph_search: closed = set()
          initial_board = AbstractState(initial_board, None, 0)
+
          if not initial_board.is_goal():
              stack = [initial_board]
              self.counts["enqueues"] += 1
@@ -443,6 +447,7 @@ class HillClimbingPuzzleSolver:
 
         if graph_search: closed = set()
         initial_board = AbstractState(initial_board, None, 0)
+
         if not initial_board.is_goal():
             stack = [initial_board]
             self.counts["enqueues"] += 1
@@ -613,6 +618,7 @@ class AStarPuzzleSolver:
         if graph_search: 
             closed = set()
         initial_board = AbstractState(initial_board, None, 0)
+
         if not initial_board.is_goal():
             heappush(stack, (heuristic_fn(initial_board.get_snapshot()) + initial_board.get_path_length(), initial_board))
             self.counts["enqueues"] += 1
