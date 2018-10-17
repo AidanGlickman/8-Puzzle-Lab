@@ -15,6 +15,7 @@ class PuzzleBoard:
     """Use the attribute board to store state data. 
     A tuple is our recommendation, but any *immutable* type will do.
     """
+    
     board = ()
     goal = ()
 
